@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="30dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -38,8 +38,8 @@
 
     <FrameLayout
         android:id="@+id/flNotification"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/bg_circle_white"
         app:layout_constraintBottom_toBottomOf="@+id/clLogoContainer"
@@ -47,8 +47,8 @@
         app:layout_constraintTop_toTopOf="@+id/clLogoContainer">
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_gravity="center"
             android:src="@drawable/notification_icon" />
 
@@ -62,25 +62,26 @@
             android:background="@drawable/bg_circle_badge"
             android:gravity="center"
             android:text="0"
-            android:visibility="gone"
             android:textColor="@color/white"
-            android:textSize="10sp" />
+            android:textSize="10sp"
+            android:visibility="gone" />
     </FrameLayout>
 
     <ImageView
         android:id="@+id/ivProfile"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/bg_circle_white"
         android:scaleType="centerCrop"
         android:src="@android:drawable/ic_menu_myplaces"
-        android:background="@drawable/bg_circle_white"
         app:layout_constraintBottom_toBottomOf="@+id/clLogoContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/clLogoContainer" />
 
     <!-- Main Content -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
@@ -100,19 +101,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:gravity="end"
                 android:orientation="horizontal">
-                <ImageView
-                    android:id="@+id/btnSearch"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:src="@android:drawable/ic_menu_search"
-                    app:tint="@color/text_gray" />
 
-                <ImageButton
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_marginStart="12dp"
-                    android:background="@drawable/bg_circle_white"
-                    android:src="@drawable/filter_icon" />
             </LinearLayout>
 
             <!-- Brands Section -->
@@ -228,5 +217,16 @@
         android:layout_height="60dp"
         android:layout_marginBottom="30dp"
         app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/btnSearch"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="5dp"
+        android:src="@android:drawable/ic_menu_search"
+        app:layout_constraintBottom_toBottomOf="@+id/clLogoContainer"
+        app:layout_constraintEnd_toStartOf="@+id/flNotification"
+        app:layout_constraintTop_toTopOf="@+id/clLogoContainer"
+        app:tint="@color/black" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

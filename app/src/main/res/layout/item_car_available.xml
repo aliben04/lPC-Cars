@@ -118,8 +118,7 @@
             <ImageView
                 android:layout_width="16dp"
                 android:layout_height="16dp"
-                android:src="@drawable/dollar_icon"
-                app:tint="@color/text_gray" />
+                android:src="@drawable/dollar_icon" />
 
             <TextView
                 android:id="@+id/tvPrice"
