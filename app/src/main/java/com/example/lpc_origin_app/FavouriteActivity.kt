@@ -42,7 +42,7 @@ class FavouriteActivity : AppCompatActivity() {
     private fun setupBottomNav() {
         // Highlight Favorites icon
         binding.bottomNav.navFavorites.setImageResource(R.drawable.favourite_heart_icon)
-        binding.bottomNav.navFavorites.setColorFilter(getColor(R.color.white))
+        binding.bottomNav.navFavorites.setColorFilter(getColor(R.color.black))
         
         // Ensure Home icon is gray
         binding.bottomNav.navHome.setColorFilter(getColor(R.color.text_gray))
@@ -61,7 +61,7 @@ class FavouriteActivity : AppCompatActivity() {
             }
         }
         binding.bottomNav.navHistory.setOnClickListener {
-            startActivity(Intent(this, LiveContractsActivity::class.java))
+            startActivity(Intent(this, HistoryActivity::class.java))
         }
         binding.bottomNav.navNotifications.setOnClickListener {
             startActivity(Intent(this, NotificationsActivity::class.java))

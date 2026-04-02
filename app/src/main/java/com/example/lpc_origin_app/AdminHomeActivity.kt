@@ -126,6 +126,13 @@ class AdminHomeActivity : AppCompatActivity() {
                 intent.putExtra("CAR_ID", car.id)
                 startActivity(intent)
             }
+
+            holder.binding.btnEditCar.setOnClickListener {
+                val intent = Intent(this@AdminHomeActivity, AddCarActivity::class.java)
+                intent.putExtra("EDIT_MODE", true)
+                intent.putExtra("CAR_ID", car.id)
+                startActivity(intent)
+            }
         }
         override fun getItemCount() = cars.size
     }

@@ -6,7 +6,7 @@
     android:orientation="horizontal"
     android:padding="16dp"
     android:gravity="center_vertical"
-    android:background="@color/white">
+    android:background="@color/card_bg">
 
     <ImageView
         android:id="@+id/ivNotificationIcon"

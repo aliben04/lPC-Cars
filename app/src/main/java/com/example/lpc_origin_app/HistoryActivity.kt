@@ -44,7 +44,9 @@ class HistoryActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNav() {
-        binding.bottomNav.navHistory.setColorFilter(getColor(R.color.white))
+        binding.bottomNav.navHistory.setImageResource(R.drawable.history_icon)
+        binding.bottomNav.navHistory.setColorFilter(getColor(R.color.black))
+        
         binding.bottomNav.navHome.setColorFilter(getColor(R.color.text_gray))
         
         binding.bottomNav.navHome.setOnClickListener {
@@ -68,15 +70,16 @@ class HistoryActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return
         
         val query = if (isAdmin) {
-            db.collection("bookings")
+            db.collection("bookings").whereEqualTo("isPaid", true)
         } else {
-            db.collection("bookings").whereEqualTo("userId", userId)
+            db.collection("bookings")
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("isPaid", true)
         }
 
-        query.orderBy("timestamp", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshots, e ->
+        query.addSnapshotListener { snapshots, e ->
                 if (e != null || snapshots == null) return@addSnapshotListener
-                val bookings = snapshots.toObjects(Booking::class.java)
+                val bookings = snapshots.toObjects(Booking::class.java).sortedByDescending { it.timestamp }
                 binding.rvHistory.adapter = HistoryAdapter(bookings)
             }
     }
@@ -94,28 +97,12 @@ class HistoryActivity : AppCompatActivity() {
             val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
             holder.binding.tvDate.text = sdf.format(Date(booking.timestamp))
 
-            if (booking.isPaid) {
-                holder.binding.tvStatus.text = "Paid"
-                holder.binding.tvStatus.setBackgroundResource(R.drawable.bg_circle_badge)
-                holder.binding.tvStatus.backgroundTintList = getColorStateList(R.color.bottom_nav_dark)
-                holder.binding.tvStatus.setTextColor(getColor(R.color.white))
-            } else {
-                holder.binding.tvStatus.text = "Unpaid"
-                // Default style is already Unpaid orange from item_awaiting_reservation
-            }
 
             if (booking.carImageUrl.isNotEmpty()) {
                 Glide.with(holder.itemView.context).load(booking.carImageUrl).into(holder.binding.ivCarImage)
             }
 
-            holder.itemView.setOnClickListener {
-                if (!booking.isPaid && !isAdmin) {
-                    val intent = Intent(this@HistoryActivity, PaymentMethodsActivity::class.java)
-                    intent.putExtra("BOOKING_ID", booking.id)
-                    intent.putExtra("CAR_ID", booking.carId)
-                    startActivity(intent)
-                }
-            }
+
         }
         override fun getItemCount() = bookings.size
     }

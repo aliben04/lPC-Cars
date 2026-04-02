@@ -80,10 +80,10 @@
                     android:layout_alignParentEnd="true"
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_circle_white"
                     android:padding="10dp"
                     android:src="@drawable/favourite_heart_icon"
-                    app:tint="@color/text_gray" />
+                    android:background="@android:color/transparent"
+                    />
 
             </RelativeLayout>
 
@@ -130,6 +130,7 @@
                     android:background="#EEEEEE" />
 
                 <RelativeLayout
+                    android:id="@+id/rlAdminInfo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp">
@@ -317,6 +318,94 @@
                         android:backgroundTint="#F44336"
                         app:cornerRadius="12dp"
                         app:icon="@android:drawable/ic_menu_delete" />
+
+                </LinearLayout>
+
+                <!-- ===== RENTER INFO (Admin only, Not Available cars) ===== -->
+                <LinearLayout
+                    android:id="@+id/llRenterInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/border_gray" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Current Renter"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/ivRenterImage"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ste_logo"
+                            app:shapeAppearanceOverlay="@style/ShapeAppearance.Circle" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvRenterName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Renter Name"
+                                android:textColor="@color/black"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvRenterReturnDate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Return: --"
+                                android:textColor="@color/text_gray"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivCallRenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_circle_white"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:padding="10dp"
+                            android:src="@drawable/phone_icon" />
+
+                        <ImageView
+                            android:id="@+id/ivWhatsappRenter"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_circle_white"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:padding="10dp"
+                            android:src="@drawable/whatsapp_icon" />
+                    </LinearLayout>
 
                 </LinearLayout>
 

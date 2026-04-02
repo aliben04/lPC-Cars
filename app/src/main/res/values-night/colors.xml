@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Keep white as white because it's mostly used for text on dark backgrounds (buttons/primary items) -->
+    <!-- Invert black to white so text on surfaces becomes readable in dark mode -->
+    <color name="black">#FFFFFFFF</color>
+    
+    <!-- Backgrounds -->
+    <color name="bg_light_gray">#121212</color>
+    <color name="card_bg">#1E1E1E</color>
+    
+    <!-- Texts and icons -->
+    <color name="text_gray">#B3B3B3</color>
+    
+    <!-- Bottom nav and primary buttons. Keep dark but slightly elevated if needed, or stick to the brand dark -->
+    <color name="bottom_nav_dark">#1E1E1E</color>  
+    <color name="primary_dark">#121212</color>
+    <color name="bg_button_primary">#2C2C2C</color> <!-- slightly lighter than bg so buttons are visible -->
+    
+    <!-- Borders and icon holders -->
+    <color name="border_gray">#333333</color>
+    <color name="icon_bg_gray">#2C2C2C</color>
+</resources>

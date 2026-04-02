@@ -3,6 +3,7 @@ package com.example.lpc_origin_app
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -11,6 +12,7 @@ import com.bumptech.glide.Glide
 import com.example.lpc_origin_app.databinding.ActivityProfileBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import androidx.appcompat.app.AppCompatDelegate
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -27,12 +29,13 @@ class ProfileActivity : AppCompatActivity() {
 
         setupClickListeners()
         setupBottomNav()
+        checkUserRole()
     }
 
     private fun setupBottomNav() {
         // Highlight Profile icon
         binding.bottomNav.navProfile.setImageResource(R.drawable.profile_settings)
-        binding.bottomNav.navProfile.setColorFilter(getColor(R.color.white))
+        binding.bottomNav.navProfile.setColorFilter(getColor(R.color.black))
         
         // Ensure Home icon is gray
         binding.bottomNav.navHome.setColorFilter(getColor(R.color.text_gray))
@@ -48,6 +51,18 @@ class ProfileActivity : AppCompatActivity() {
         }
         binding.bottomNav.navNotifications.setOnClickListener {
             startActivity(Intent(this, NotificationsActivity::class.java))
+        }
+    }
+    private fun checkUserRole() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).get().addOnSuccessListener { doc ->
+            val type = doc.getString("type")
+
+            if (type == "Admin") {
+                binding.bottomNav.root.visibility = View.GONE
+            } else {
+                binding.bottomNav.root.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -96,9 +111,19 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
-        binding.llHistory.setOnClickListener {
-            startActivity(Intent(this, HistoryActivity::class.java))
+        // Initialize Dark Mode switch
+        val prefs = getSharedPreferences("LPC_PREFS", MODE_PRIVATE)
+        binding.switchDarkMode.isChecked = prefs.getBoolean("DARK_MODE", false)
+
+        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("DARK_MODE", isChecked).apply()
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
         }
+
 
         binding.llLanguages.setOnClickListener {
             showLanguageDialog()
@@ -111,6 +136,7 @@ class ProfileActivity : AppCompatActivity() {
         binding.llAwaitingReservations.setOnClickListener {
             startActivity(Intent(this, AwaitingReservationActivity::class.java))
         }
+
 
         binding.llLogout.setOnClickListener {
             logout()

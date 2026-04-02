@@ -60,6 +60,10 @@ class LiveContractsActivity : AppCompatActivity() {
             startActivity(intent)
         }
         
+        binding.bottomNav.navHistory.setOnClickListener {
+            startActivity(Intent(this, HistoryActivity::class.java))
+        }
+        
         binding.bottomNav.navFavorites.setOnClickListener {
             startActivity(Intent(this, FavouriteActivity::class.java))
         }

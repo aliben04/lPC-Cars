@@ -34,7 +34,7 @@ class PaymentSuccessActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.btnBack.setOnClickListener { finish() }
+
     }
 
     private fun fetchBookingDetails(bookingId: String, last4: String) {

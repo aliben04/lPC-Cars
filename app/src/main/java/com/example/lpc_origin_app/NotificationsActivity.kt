@@ -39,19 +39,20 @@ class NotificationsActivity : AppCompatActivity() {
         setupRecyclerViews()
         fetchNotifications()
         setupBottomNav()
+        checkUserRole()
 
         binding.btnBack.setOnClickListener { finish() }
     }
 
     private fun setupBottomNav() {
         binding.bottomNav.navNotifications.setImageResource(R.drawable.notification_icon)
-        binding.bottomNav.navNotifications.setColorFilter(getColor(R.color.white))
+        binding.bottomNav.navNotifications.setColorFilter(getColor(R.color.black))
 
         binding.bottomNav.navHome.setOnClickListener {
             goHome(AdminHomeActivity::class.java, MainActivity::class.java)
         }
         binding.bottomNav.navHistory.setOnClickListener {
-            startActivity(Intent(this, LiveContractsActivity::class.java))
+            startActivity(Intent(this, HistoryActivity::class.java))
         }
         binding.bottomNav.navFavorites.setOnClickListener {
             startActivity(Intent(this, FavouriteActivity::class.java))
@@ -83,6 +84,18 @@ class NotificationsActivity : AppCompatActivity() {
         // Add swipe to delete functionality
         setupSwipeToDelete(binding.rvToday)
         setupSwipeToDelete(binding.rvPrevious)
+    }
+    private fun checkUserRole() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).get().addOnSuccessListener { doc ->
+            val type = doc.getString("type")
+
+            if (type == "Admin") {
+                binding.bottomNav.root.visibility = View.GONE
+            } else {
+                binding.bottomNav.root.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun setupSwipeToDelete(recyclerView: RecyclerView) {

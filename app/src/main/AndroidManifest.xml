@@ -21,6 +21,7 @@
         android:required="false" />
 
     <application
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -58,6 +59,7 @@
         <activity android:name=".FavouriteActivity" />
         <activity android:name=".TrackingActivity" />
         <activity android:name=".AwaitingReservationActivity" />
+        <activity android:name=".HistoryActivity" />
 
         <service
             android:name=".LocationService"

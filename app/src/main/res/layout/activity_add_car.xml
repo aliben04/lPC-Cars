@@ -181,11 +181,11 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
-                        android:background="#F8F9FB"
+                        android:background="@color/card_bg"
                         android:gravity="center"
                         android:orientation="horizontal"
                         android:paddingHorizontal="8dp"
-                        android:backgroundTint="#F0F0F0">
+                        android:backgroundTint="@color/icon_bg_gray">
 
                         <ImageView
                             android:id="@+id/ivCamera"
@@ -208,7 +208,7 @@
                             android:layout_width="1dp"
                             android:layout_height="match_parent"
                             android:layout_marginHorizontal="8dp"
-                            android:background="#D0D0D0" />
+                            android:background="@color/border_gray" />
 
                         <ImageView
                             android:id="@+id/btnCamera"

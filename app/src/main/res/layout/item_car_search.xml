@@ -26,12 +26,13 @@
                 android:src="@drawable/logo" />
 
             <ImageView
+                android:id="@+id/ivFavourite"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentTop="true"
                 android:layout_margin="8dp"
-                android:background="@drawable/bg_circle_white"
+                android:background="@android:color/transparent"
                 android:padding="8dp"
                 android:src="@drawable/favourite_heart_icon"
                 app:tint="@color/text_gray" />

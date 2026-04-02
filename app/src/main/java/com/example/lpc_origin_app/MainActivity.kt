@@ -12,6 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import android.content.res.ColorStateList
+import android.graphics.Color
 import com.bumptech.glide.Glide
 import com.example.lpc_origin_app.databinding.ActivityMainBinding
 import com.example.lpc_origin_app.databinding.ItemBrandBinding
@@ -25,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private var favouriteCarDocs = mutableMapOf<String, String>()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -43,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         fetchBrands()
         fetchCars()
         observeNotifications()
+        observeFavourites()
         setupBottomNav()
         checkLocationPermissions()
         binding.btnSearch.setOnClickListener {
@@ -87,7 +91,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupBottomNav() {
         binding.bottomNav.navHome.setImageResource(R.drawable.homepage_icon)
-        binding.bottomNav.navHome.setColorFilter(getColor(R.color.white))
+        binding.bottomNav.navHome.setColorFilter(getColor(R.color.black))
 
         binding.bottomNav.navHistory.setOnClickListener {
             startActivity(Intent(this, HistoryActivity::class.java))
@@ -150,6 +154,24 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     binding.tvNotificationBadge.visibility = View.GONE
                 }
+            }
+    }
+
+    private fun observeFavourites() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("favourites")
+            .whereEqualTo("userId", userId)
+            .addSnapshotListener { snapshots, e ->
+                if (e != null || snapshots == null) return@addSnapshotListener
+                favouriteCarDocs.clear()
+                for (doc in snapshots.documents) {
+                    val carId = doc.getString("carId")
+                    if (carId != null) {
+                        favouriteCarDocs[carId] = doc.id
+                    }
+                }
+                // Notify adapters to refresh the heart icons
+                binding.rvAvailableCars.adapter?.notifyDataSetChanged()
             }
     }
 
@@ -218,6 +240,27 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("CAR_ID", car.id)
                 startActivity(intent)
             }
+
+            if (favouriteCarDocs.containsKey(car.id)) {
+                holder.binding.ivFavourite.imageTintList = ColorStateList.valueOf(Color.RED)
+            } else {
+                holder.binding.ivFavourite.imageTintList = ColorStateList.valueOf(Color.GRAY)
+            }
+
+            holder.binding.ivFavourite.setOnClickListener {
+                val userId = auth.currentUser?.uid ?: return@setOnClickListener
+                val existingDocId = favouriteCarDocs[car.id]
+
+                if (existingDocId != null) {
+                    db.collection("favourites").document(existingDocId).delete()
+                } else {
+                    val data = hashMapOf(
+                        "userId" to userId,
+                        "carId" to car.id
+                    )
+                    db.collection("favourites").add(data)
+                }
+            }
         }
         override fun getItemCount() = cars.size
     }
@@ -237,6 +280,11 @@ class MainActivity : AppCompatActivity() {
                 Glide.with(holder.itemView.context)
                     .load(car.imageUrls[0])
                     .into(holder.binding.ivCarLarge)
+            }
+            holder.itemView.setOnClickListener {
+                val intent = Intent(this@MainActivity, CarDetailsActivity::class.java)
+                intent.putExtra("CAR_ID", car.id)
+                startActivity(intent)
             }
         }
         override fun getItemCount() = cars.size

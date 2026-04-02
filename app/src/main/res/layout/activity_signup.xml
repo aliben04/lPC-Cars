@@ -137,7 +137,7 @@
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1"
-            android:background="#E0E0E0" />
+            android:background="@color/border_gray" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -151,7 +151,7 @@
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1"
-            android:background="#E0E0E0" />
+            android:background="@color/border_gray" />
     </LinearLayout>
 
     <LinearLayout

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.LpcOriginApp" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.LpcOriginApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/bottom_nav_dark</item>
         <item name="colorPrimaryVariant">@color/black</item>

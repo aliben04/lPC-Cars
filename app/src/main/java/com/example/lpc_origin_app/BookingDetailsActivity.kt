@@ -48,7 +48,8 @@ class BookingDetailsActivity : AppCompatActivity() {
             processBooking(carId)
         }
 
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener {
+            finish() }
         
         binding.swDriver.setOnCheckedChangeListener { _, _ -> calculateTotal() }
     }

@@ -27,7 +27,8 @@ class PaymentMethodsActivity : AppCompatActivity() {
 
         setupCountrySpinner()
 
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener {
+            finish() }
 
         binding.btnContinueBottom.setOnClickListener {
             if (validateFields()) {

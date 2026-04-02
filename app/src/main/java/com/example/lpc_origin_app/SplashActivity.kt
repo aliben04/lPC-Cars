@@ -18,7 +18,7 @@ class SplashActivity : AppCompatActivity() {
         // Show splash for 2 seconds
         Handler(Looper.getMainLooper()).postDelayed({
             checkLoginStatus()
-        }, 2000)
+        }, 1000)
     }
 
     private fun checkLoginStatus() {

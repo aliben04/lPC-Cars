@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,16 +18,21 @@ import com.example.lpc_origin_app.databinding.ActivityCarDetailsBinding
 import com.example.lpc_origin_app.databinding.ItemCarImageBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CarDetailsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCarDetailsBinding
     private val db = FirebaseFirestore.getInstance()
+    private var isAdmin = false
     private val auth = FirebaseAuth.getInstance()
     private var currentCar: Car? = null
     private var isFavourite = false
     private var favouriteId: String? = null
     private var adminPhone: String? = null
+    private var renterPhone: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +94,24 @@ class CarDetailsActivity : AppCompatActivity() {
                 startActivity(intent)
             } ?: Toast.makeText(this, "Admin phone not available", Toast.LENGTH_SHORT).show()
         }
+
+        binding.ivCallRenter.setOnClickListener {
+            renterPhone?.let { phone ->
+                val intent = Intent(Intent.ACTION_DIAL)
+                intent.data = Uri.parse("tel:$phone")
+                startActivity(intent)
+            } ?: Toast.makeText(this, "Renter phone not available", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.ivWhatsappRenter.setOnClickListener {
+            renterPhone?.let { phone ->
+                val url = "https://api.whatsapp.com/send?phone=$phone"
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                startActivity(intent)
+            } ?: Toast.makeText(this, "Renter phone not available", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     // ================= FETCH DATA =================
@@ -96,7 +120,9 @@ class CarDetailsActivity : AppCompatActivity() {
         db.collection("cars").document(carId).get().addOnSuccessListener { document ->
             val car = document.toObject(Car::class.java)
             if (car != null) {
+                Log.d("CAR_STATUS", "status = '${car.status}'")
                 currentCar = car
+                updateBookButton()
 
                 // BASIC INFO
                 binding.tvCarName.text = "${car.brand} ${car.model}"
@@ -124,8 +150,53 @@ class CarDetailsActivity : AppCompatActivity() {
                     binding.btnTrackLocation.alpha = 1f
                     binding.btnTrackLocation.text = "Track Location"
                 }
+                binding.btnBookNowBottom.visibility =
+                    if (car.status?.trim()?.equals("Available", true) == true)
+                        View.VISIBLE
+                    else
+                        View.GONE
+
             }
         }
+    }
+
+    // ================= RENTER INFO =================
+
+    private fun loadRenterInfo(carId: String) {
+        db.collection("bookings")
+            .whereEqualTo("carId", carId)
+            .whereIn("status", listOf("Live", "Pending"))
+            .limit(1)
+            .get()
+            .addOnSuccessListener { bookingDocs ->
+                if (!bookingDocs.isEmpty) {
+                    val booking = bookingDocs.documents[0].toObject(Booking::class.java)
+                    if (booking != null) {
+                        // Show return date
+                        val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+                        binding.tvRenterReturnDate.text = "Return: ${sdf.format(Date(booking.returnDate))}"
+
+                        // Fetch renter user info
+                        db.collection("users").document(booking.userId).get()
+                            .addOnSuccessListener { userDoc ->
+                                val fullName = userDoc.getString("full_name") ?: "Unknown"
+                                val profileImage = userDoc.getString("profileImageUrl")
+                                renterPhone = userDoc.getString("phone_number")
+
+                                binding.tvRenterName.text = fullName
+                                if (!profileImage.isNullOrEmpty()) {
+                                    Glide.with(this)
+                                        .load(profileImage)
+                                        .circleCrop()
+                                        .placeholder(R.drawable.ste_logo)
+                                        .into(binding.ivRenterImage)
+                                }
+
+                                binding.llRenterInfo.visibility = View.VISIBLE
+                            }
+                    }
+                }
+            }
     }
 
     // ================= IMAGES =================
@@ -187,18 +258,49 @@ class CarDetailsActivity : AppCompatActivity() {
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).get().addOnSuccessListener { doc ->
             val type = doc.getString("type")
-            if (type == "Admin") {
+            isAdmin = type == "Admin"
+            if (isAdmin) {
                 binding.llAdminActions.visibility = View.VISIBLE
-                binding.btnBookNowBottom.visibility = View.GONE
-                adminPhone = doc.getString("phone_number")
-                updateAdminUI(doc.getString("full_name"), doc.getString("profileImageUrl"))
+                binding.rlAdminInfo.visibility = View.GONE  // Admin doesn't see their own info
+                // Load renter info if car is not available
+                val carId = intent.getStringExtra("CAR_ID")
+                if (carId != null) {
+                    loadRenterInfo(carId)
+                }
             } else {
                 binding.llAdminActions.visibility = View.GONE
-                binding.btnBookNowBottom.visibility = View.VISIBLE
+                binding.rlAdminInfo.visibility = View.VISIBLE  // User sees admin info
                 loadAdminInfo()
             }
+            updateBookButton()
         }
     }
+    private fun updateBookButton() {
+        val isAvailable = currentCar?.status?.trim()?.equals("Available", true) == true
+
+        binding.btnBookNowBottom.visibility =
+            if (!isAdmin && isAvailable) View.VISIBLE else View.GONE
+    }
+//    private fun checkUserRole() {
+//        val uid = auth.currentUser?.uid ?: return
+//        db.collection("users").document(uid).get().addOnSuccessListener { doc ->
+//            val type = doc.getString("type")
+//            isAdmin = type == "Admin"
+//            if (isAdmin) {
+//                binding.llAdminActions.visibility = View.VISIBLE
+//                binding.btnBookNowBottom.visibility = View.GONE
+//                adminPhone = doc.getString("phone_number")
+//                updateAdminUI(doc.getString("full_name"), doc.getString("profileImageUrl"))
+//            } else {
+//                binding.llAdminActions.visibility = View.GONE
+//                binding.btnBookNowBottom.visibility = View.VISIBLE
+//                loadAdminInfo()
+//            }
+//        }
+//    }
+
+
+
 
     // ================= FAVOURITE =================
 

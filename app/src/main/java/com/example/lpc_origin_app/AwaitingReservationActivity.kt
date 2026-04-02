@@ -51,7 +51,7 @@ class AwaitingReservationActivity : AppCompatActivity() {
             startActivity(intent)
         }
         binding.bottomNav.navHistory.setOnClickListener {
-            startActivity(Intent(this, LiveContractsActivity::class.java))
+            startActivity(Intent(this, HistoryActivity::class.java))
         }
         binding.bottomNav.navFavorites.setOnClickListener {
             startActivity(Intent(this, FavouriteActivity::class.java))
