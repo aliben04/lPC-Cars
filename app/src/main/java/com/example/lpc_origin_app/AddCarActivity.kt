@@ -40,6 +40,7 @@ class AddCarActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks 
     private val selectedImageUris = mutableListOf<Uri>()
     private var existingImageUrls = mutableListOf<String>()
     private var selectedFuelType: String = "Diesel"
+    private var currentFavouriteCount = 0
     
     private var isEditMode = false
     private var carId: String? = null
@@ -142,6 +143,7 @@ class AddCarActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks 
                 setFuelType(car.fuelType)
                 setFeatures(car.features)
                 existingImageUrls = car.imageUrls.toMutableList()
+                currentFavouriteCount = car.favouriteCount
                 
                 if (existingImageUrls.isNotEmpty()) {
                     binding.ivCarPreview.visibility = View.VISIBLE
@@ -437,6 +439,7 @@ class AddCarActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks 
             fuelType = selectedFuelType,
             features = getFeatures(),
             status = "Available",
+            favouriteCount = currentFavouriteCount,
             createdAt = if (isEditMode) 0 else System.currentTimeMillis()
         )
 

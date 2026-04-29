@@ -21,6 +21,7 @@ import com.example.lpc_origin_app.databinding.ItemNotificationBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.bumptech.glide.Glide
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -158,13 +159,16 @@ class NotificationsActivity : AppCompatActivity() {
 
         db.collection("notifications")
             .whereEqualTo("userId", userId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshots, e ->
-                if (e != null || snapshots == null) return@addSnapshotListener
+                if (e != null) {
+                    Toast.makeText(this, "Error fetching notifications: ${e.message}", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
+                }
+                if (snapshots == null) return@addSnapshotListener
 
                 val allNotifications = snapshots.documents.mapNotNull { doc ->
                     doc.toObject(Notification::class.java)?.copy(id = doc.id)
-                }
+                }.sortedByDescending { it.timestamp }
 
                 if (allNotifications.isEmpty()) {
                     binding.llEmptyState.visibility = View.VISIBLE
@@ -217,6 +221,14 @@ class NotificationsActivity : AppCompatActivity() {
             val notif = notifications[position]
             holder.binding.tvNotificationTitle.text = notif.title
             holder.binding.tvNotificationMessage.text = notif.message
+            if (notif.iconUrl.isNotEmpty()) {
+                Glide.with(holder.itemView.context)
+                    .load(notif.iconUrl)
+                    .placeholder(R.drawable.admin_verified_icon)
+                    .into(holder.binding.ivNotificationIcon)
+            } else {
+                holder.binding.ivNotificationIcon.setImageResource(R.drawable.admin_verified_icon)
+            }
             
             val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
             holder.binding.tvNotificationTime.text = sdf.format(Date(notif.timestamp))

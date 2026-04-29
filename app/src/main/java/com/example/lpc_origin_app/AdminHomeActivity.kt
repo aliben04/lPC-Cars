@@ -52,7 +52,7 @@ class AdminHomeActivity : AppCompatActivity() {
 
     private fun setupBottomNav() {
         binding.bottomNav.navHome.setImageResource(R.drawable.homepage_icon)
-        binding.bottomNav.navHome.setColorFilter(getColor(R.color.white))
+        binding.bottomNav.navHome.setColorFilter(getColor(R.color.black))
 
         binding.bottomNav.navSearch.setOnClickListener {
             startActivity(Intent(this, SearchActivity::class.java))
@@ -113,7 +113,16 @@ class AdminHomeActivity : AppCompatActivity() {
             val car = cars[position]
             holder.binding.tvCarName.text = "${car.brand} ${car.model}"
             holder.binding.tvPrice.text = "${car.pricePerDay} MAD/Day"
-            holder.binding.tvStatus.text = car.status
+            holder.binding.tvFavouriteCount.text = car.favouriteCount.toString()
+            val context = holder.itemView.context
+            if (car.status == "Available") {
+                holder.binding.tvStatus.text = car.status
+                holder.binding.tvStatus.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.green))
+            } else {
+                holder.binding.tvStatus.text = car.status
+                holder.binding.tvStatus.setTextColor(androidx.core.content.ContextCompat.getColor(context, R.color.logout_red))
+                holder.binding.btnEditCar.visibility= View.GONE
+            }
 
             if (car.imageUrls.isNotEmpty()) {
                 Glide.with(holder.itemView.context)

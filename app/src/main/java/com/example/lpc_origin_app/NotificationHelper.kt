@@ -23,7 +23,8 @@ object NotificationHelper {
             .get()
             .addOnSuccessListener { admins ->
                 for (admin in admins) {
-                    sendNotification(admin.id, title, message, iconUrl)
+                    val adminUid = admin.getString("uid") ?: admin.id
+                    sendNotification(adminUid, title, message, iconUrl)
                 }
             }
     }

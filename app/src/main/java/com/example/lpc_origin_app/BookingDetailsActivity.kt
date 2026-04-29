@@ -298,6 +298,28 @@ class BookingDetailsActivity : AppCompatActivity() {
         val totalAmountStr = binding.tvTotalAmount.text.toString().replace(" MAD", "").replace(",", ".")
         val totalAmount = totalAmountStr.toDoubleOrNull() ?: 0.0
 
+        // Calculate correct timestamps including the hours from spinners
+        val startIdx = binding.spStartTime.selectedItemPosition
+        val startHour = 8 + startIdx
+        
+        val actualPickupDate = Calendar.getInstance().apply {
+            timeInMillis = pickupDate.timeInMillis
+            set(Calendar.HOUR_OF_DAY, startHour)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        val finalReturnDate = if (rentalType == "Hour") {
+            val endIdx = binding.spEndTime.selectedItemPosition
+            val endHour = 9 + endIdx
+            var hours = endHour - startHour
+            if (hours <= 0) hours += 24
+            actualPickupDate + (hours * 3600000L)
+        } else {
+            returnDate.timeInMillis
+        }
+
         val booking = Booking(
             userId = userId,
             carId = carId,
@@ -306,8 +328,8 @@ class BookingDetailsActivity : AppCompatActivity() {
             contact = contact,
             cin = cin,
             rentalType = rentalType,
-            pickupDate = pickupDate.timeInMillis,
-            returnDate = if (rentalType == "Hour") pickupDate.timeInMillis else returnDate.timeInMillis,
+            pickupDate = actualPickupDate,
+            returnDate = finalReturnDate,
             status = "Pending",
             timestamp = System.currentTimeMillis(),
             withDriver = binding.swDriver.isChecked,
@@ -319,6 +341,9 @@ class BookingDetailsActivity : AppCompatActivity() {
 
         db.collection("bookings").add(booking)
             .addOnSuccessListener { docRef ->
+                // Mark car as not available immediately
+                db.collection("cars").document(carId).update("status", "Not Available")
+
                 val intent = Intent(this, PaymentMethodsActivity::class.java)
                 intent.putExtra("BOOKING_ID", docRef.id)
                 intent.putExtra("CAR_ID", carId)

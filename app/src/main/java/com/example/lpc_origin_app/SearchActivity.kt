@@ -14,7 +14,9 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.view.View
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 
 class SearchActivity : AppCompatActivity() {
 
@@ -22,6 +24,7 @@ class SearchActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
     private var favouriteCarDocs = mutableMapOf<String, String>()
+    private var userType: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +33,9 @@ class SearchActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnBack.setOnClickListener { finish() }
+
+        // fetch user type
+        fetchUserType()
 
         // observe favourites
         observeFavourites()
@@ -115,6 +121,7 @@ class SearchActivity : AppCompatActivity() {
 
             holder.binding.tvCarName.text = "${car.brand} ${car.model}"
             holder.binding.tvPrice.text = "${car.pricePerDay} MAD/Day"
+            holder.binding.tvFavouriteCount.text = car.favouriteCount.toString()
 
             if (car.imageUrls.isNotEmpty()) {
                 Glide.with(holder.itemView.context)
@@ -128,28 +135,51 @@ class SearchActivity : AppCompatActivity() {
                 startActivity(intent)
             }
 
-            if (favouriteCarDocs.containsKey(car.id)) {
-                holder.binding.ivFavourite.imageTintList = ColorStateList.valueOf(Color.RED)
+            // Handle visibility and behavior based on user type
+            if (userType == "Admin") {
+                holder.binding.fvcounter.visibility = View.GONE
             } else {
-                holder.binding.ivFavourite.imageTintList = ColorStateList.valueOf(Color.GRAY)
-            }
-
-            holder.binding.ivFavourite.setOnClickListener {
-                val userId = auth.currentUser?.uid ?: return@setOnClickListener
-                val existingDocId = favouriteCarDocs[car.id]
-
-                if (existingDocId != null) {
-                    db.collection("favourites").document(existingDocId).delete()
+                holder.binding.fvcounter.visibility = View.VISIBLE
+                
+                // Favorite tint logic
+                if (favouriteCarDocs.containsKey(car.id)) {
+                    holder.binding.ivFavourite.imageTintList = ColorStateList.valueOf(Color.RED)
                 } else {
-                    val data = hashMapOf(
-                        "userId" to userId,
-                        "carId" to car.id
-                    )
-                    db.collection("favourites").add(data)
+                    holder.binding.ivFavourite.imageTintList = ColorStateList.valueOf(Color.GRAY)
+                }
+
+                holder.binding.ivFavourite.setOnClickListener {
+                    val userId = auth.currentUser?.uid ?: return@setOnClickListener
+                    val existingDocId = favouriteCarDocs[car.id]
+
+                    if (existingDocId != null) {
+                        db.collection("favourites").document(existingDocId).delete()
+                            .addOnSuccessListener {
+                                db.collection("cars").document(car.id).update("favouriteCount", FieldValue.increment(-1))
+                            }
+                    } else {
+                        val data = hashMapOf(
+                            "userId" to userId,
+                            "carId" to car.id
+                        )
+                        db.collection("favourites").add(data)
+                            .addOnSuccessListener {
+                                db.collection("cars").document(car.id).update("favouriteCount", FieldValue.increment(1))
+                            }
+                    }
                 }
             }
         }
 
         override fun getItemCount() = cars.size
+    }
+
+    private fun fetchUserType() {
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { doc ->
+                userType = doc.getString("type")
+                binding.rvRecommend.adapter?.notifyDataSetChanged()
+            }
     }
 }

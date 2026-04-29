@@ -21,6 +21,8 @@ import com.example.lpc_origin_app.databinding.ItemCarAvailableBinding
 import com.example.lpc_origin_app.databinding.ItemCarUnavailableBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class MainActivity : AppCompatActivity() {
 
@@ -110,6 +112,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadUserProfile()
+        autoUpdateExpiredBookings()
     }
 
     private fun loadUserProfile() {
@@ -176,21 +179,65 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchBrands() {
-        db.collection("brands").get().addOnSuccessListener { documents ->
-            val brandList = documents.mapNotNull { doc ->
+        binding.pbBrands.visibility = View.VISIBLE
+        binding.pbBrands.alpha = 1f
+        binding.rvBrands.visibility = View.GONE
+        binding.rvBrands.alpha = 0f
+
+        db.collection("brands").addSnapshotListener { snapshots, e ->
+            if (e != null) return@addSnapshotListener
+            
+            val brandList = snapshots?.documents?.mapNotNull { doc ->
                 val name = doc.getString("name")
                 val image = doc.getString("image")
 
                 if (name != null && image != null) {
                     brands(name, image)
                 } else null
-            }
+            } ?: emptyList()
 
             binding.rvBrands.adapter = BrandAdapter(brandList)
+            
+            binding.pbBrands.animate().alpha(0f).setDuration(300).withEndAction {
+                binding.pbBrands.visibility = View.GONE
+            }
+            binding.rvBrands.visibility = View.VISIBLE
+            binding.rvBrands.animate().alpha(1f).setDuration(300).start()
         }
     }
 
+    private fun autoUpdateExpiredBookings() {
+        val now = System.currentTimeMillis()
+        // Query both 'Live' and 'Pending' bookings that have expired
+        db.collection("bookings")
+            .whereLessThan("returnDate", now)
+            .get()
+            .addOnSuccessListener { snapshots ->
+                for (doc in snapshots.documents) {
+                    val status = doc.getString("status") ?: ""
+                    if (status == "Live" || status == "Pending") {
+                        val carId = doc.getString("carId")
+                        val bookingId = doc.id
+                        
+                        if (carId != null) {
+                            // Mark booking as completed (or cancelled if never paid)
+                            val nextStatus = if (status == "Live") "Completed" else "Cancelled"
+                            db.collection("bookings").document(bookingId).update("status", nextStatus)
+                            
+                            // Mark car as available
+                            db.collection("cars").document(carId).update("status", "Available")
+                        }
+                    }
+                }
+            }
+    }
+
     private fun fetchCars() {
+        binding.pbAvailableCars.visibility = View.VISIBLE
+        binding.pbAvailableCars.alpha = 1f
+        binding.rvAvailableCars.visibility = View.GONE
+        binding.rvAvailableCars.alpha = 0f
+
         db.collection("cars").addSnapshotListener { snapshots, e ->
             if (e != null) return@addSnapshotListener
             val allCars = snapshots?.toObjects(Car::class.java) ?: emptyList()
@@ -200,6 +247,12 @@ class MainActivity : AppCompatActivity() {
 
             binding.rvAvailableCars.adapter = AvailableCarAdapter(availableCars)
             binding.rvNotAvailableCars.adapter = UnavailableCarAdapter(unavailableCars)
+            
+            binding.pbAvailableCars.animate().alpha(0f).setDuration(300).withEndAction {
+                binding.pbAvailableCars.visibility = View.GONE
+            }
+            binding.rvAvailableCars.visibility = View.VISIBLE
+            binding.rvAvailableCars.animate().alpha(1f).setDuration(300).start()
         }
     }
 
@@ -213,6 +266,8 @@ class MainActivity : AppCompatActivity() {
             holder.binding.tvBrandName.text = brands[position].name
             Glide.with(holder.itemView.context)
                 .load(brands[position].image)
+                .placeholder(android.R.color.white)
+                .transition(DrawableTransitionOptions.withCrossFade())
                 .into(holder.binding.ivBrandLogo)
         }
         override fun getItemCount() = brands.size
@@ -228,10 +283,13 @@ class MainActivity : AppCompatActivity() {
             val car = cars[position]
             holder.binding.tvCarName.text = "${car.brand} ${car.model}"
             holder.binding.tvPrice.text = "${car.pricePerDay} MAD/Day"
+            holder.binding.tvFavouriteCount.text = car.favouriteCount.toString()
             
             if (car.imageUrls.isNotEmpty()) {
                 Glide.with(holder.itemView.context)
                     .load(car.imageUrls[0])
+                    .placeholder(R.color.bg_light_gray)
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(holder.binding.ivCar)
             }
 
@@ -253,12 +311,18 @@ class MainActivity : AppCompatActivity() {
 
                 if (existingDocId != null) {
                     db.collection("favourites").document(existingDocId).delete()
+                        .addOnSuccessListener {
+                            db.collection("cars").document(car.id).update("favouriteCount", FieldValue.increment(-1))
+                        }
                 } else {
                     val data = hashMapOf(
                         "userId" to userId,
                         "carId" to car.id
                     )
                     db.collection("favourites").add(data)
+                        .addOnSuccessListener {
+                            db.collection("cars").document(car.id).update("favouriteCount", FieldValue.increment(1))
+                        }
                 }
             }
         }
@@ -275,10 +339,40 @@ class MainActivity : AppCompatActivity() {
             val car = cars[position]
             holder.binding.tvCarNameLarge.text = "${car.brand} ${car.model}"
             holder.binding.tvPriceLarge.text = "${car.pricePerDay} MAD/Day"
+            holder.binding.tvFavouriteCountLarge.text = car.favouriteCount.toString()
+
+            if (favouriteCarDocs.containsKey(car.id)) {
+                holder.binding.ivFavouriteLarge.imageTintList = ColorStateList.valueOf(Color.RED)
+            } else {
+                holder.binding.ivFavouriteLarge.imageTintList = ColorStateList.valueOf(Color.GRAY)
+            }
+
+            holder.binding.ivFavouriteLarge.setOnClickListener {
+                val userId = auth.currentUser?.uid ?: return@setOnClickListener
+                val existingDocId = favouriteCarDocs[car.id]
+
+                if (existingDocId != null) {
+                    db.collection("favourites").document(existingDocId).delete()
+                        .addOnSuccessListener {
+                            db.collection("cars").document(car.id).update("favouriteCount", FieldValue.increment(-1))
+                        }
+                } else {
+                    val data = hashMapOf(
+                        "userId" to userId,
+                        "carId" to car.id
+                    )
+                    db.collection("favourites").add(data)
+                        .addOnSuccessListener {
+                            db.collection("cars").document(car.id).update("favouriteCount", FieldValue.increment(1))
+                        }
+                }
+            }
             
             if (car.imageUrls.isNotEmpty()) {
                 Glide.with(holder.itemView.context)
                     .load(car.imageUrls[0])
+                    .placeholder(R.color.bg_light_gray)
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(holder.binding.ivCarLarge)
             }
             holder.itemView.setOnClickListener {

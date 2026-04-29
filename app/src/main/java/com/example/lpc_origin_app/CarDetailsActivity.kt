@@ -18,6 +18,7 @@ import com.example.lpc_origin_app.databinding.ActivityCarDetailsBinding
 import com.example.lpc_origin_app.databinding.ItemCarImageBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -120,7 +121,6 @@ class CarDetailsActivity : AppCompatActivity() {
         db.collection("cars").document(carId).get().addOnSuccessListener { document ->
             val car = document.toObject(Car::class.java)
             if (car != null) {
-                Log.d("CAR_STATUS", "status = '${car.status}'")
                 currentCar = car
                 updateBookButton()
 
@@ -128,6 +128,8 @@ class CarDetailsActivity : AppCompatActivity() {
                 binding.tvCarName.text = "${car.brand} ${car.model}"
                 binding.tvPricePerDay.text = "${car.pricePerDay} MAD/Day"
                 binding.tvDescription.text = car.description
+                binding.tvFavouriteCount.text = car.favouriteCount.toString()
+                binding.tvCarNameFavCount.text = car.favouriteCount.toString()
 
                 // IMAGES
                 setupImageSlider(car.imageUrls)
@@ -149,7 +151,10 @@ class CarDetailsActivity : AppCompatActivity() {
                 } else {
                     binding.btnTrackLocation.alpha = 1f
                     binding.btnTrackLocation.text = "Track Location"
+                    binding.btnDeleteCar.visibility= View.GONE
+                    binding.btnModifyCar.visibility= View.GONE
                 }
+
                 binding.btnBookNowBottom.visibility =
                     if (car.status?.trim()?.equals("Available", true) == true)
                         View.VISIBLE
@@ -261,6 +266,7 @@ class CarDetailsActivity : AppCompatActivity() {
             isAdmin = type == "Admin"
             if (isAdmin) {
                 binding.llAdminActions.visibility = View.VISIBLE
+                binding.fvCounter.visibility= View.GONE
                 binding.rlAdminInfo.visibility = View.GONE  // Admin doesn't see their own info
                 // Load renter info if car is not available
                 val carId = intent.getStringExtra("CAR_ID")
@@ -331,6 +337,12 @@ class CarDetailsActivity : AppCompatActivity() {
                 db.collection("favourites").document(it).delete().addOnSuccessListener {
                     isFavourite = false
                     binding.btnFavourite.imageTintList = ColorStateList.valueOf(Color.GRAY)
+                    db.collection("cars").document(carId).update("favouriteCount", FieldValue.increment(-1))
+                    // Local live update
+                    val currentCount = binding.tvFavouriteCount.text.toString().toIntOrNull() ?: 0
+                    val newCount = (currentCount - 1).coerceAtLeast(0).toString()
+                    binding.tvFavouriteCount.text = newCount
+                    binding.tvCarNameFavCount.text = newCount
                 }
             }
         } else {
@@ -341,7 +353,14 @@ class CarDetailsActivity : AppCompatActivity() {
 
             db.collection("favourites").add(data).addOnSuccessListener {
                 isFavourite = true
+                favouriteId = it.id
                 binding.btnFavourite.imageTintList = ColorStateList.valueOf(Color.RED)
+                db.collection("cars").document(carId).update("favouriteCount", FieldValue.increment(1))
+                // Local live update
+                val currentCount = binding.tvFavouriteCount.text.toString().toIntOrNull() ?: 0
+                val newCount = (currentCount + 1).toString()
+                binding.tvFavouriteCount.text = newCount
+                binding.tvCarNameFavCount.text = newCount
             }
         }
     }

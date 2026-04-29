@@ -83,14 +83,14 @@ class AwaitingReservationActivity : AppCompatActivity() {
                 val booking = adapter?.getBookingAt(position)
                 
                 if (booking != null) {
-                    showDeleteConfirmationDialog(booking.id, adapter, position)
+                    showDeleteConfirmationDialog(booking, adapter, position)
                 }
             }
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.rvAwaiting)
     }
 
-    private fun showDeleteConfirmationDialog(bookingId: String, adapter: AwaitingAdapter?, position: Int) {
+    private fun showDeleteConfirmationDialog(booking: Booking, adapter: AwaitingAdapter?, position: Int) {
         val dialog = Dialog(this)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         val dialogBinding = DialogDeleteConfirmationBinding.inflate(layoutInflater)
@@ -108,8 +108,11 @@ class AwaitingReservationActivity : AppCompatActivity() {
         }
 
         dialogBinding.btnDelete.setOnClickListener {
-            db.collection("bookings").document(bookingId).delete()
+            db.collection("bookings").document(booking.id).delete()
                 .addOnSuccessListener {
+                    // Make car available again
+                    db.collection("cars").document(booking.carId).update("status", "Available")
+                    
                     dialog.dismiss()
                     Toast.makeText(this, "Reservation deleted", Toast.LENGTH_SHORT).show()
                 }

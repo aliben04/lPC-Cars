@@ -115,16 +115,32 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvBrands"
+            <FrameLayout
+                android:id="@+id/flBrands"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_brand" />
+                android:minHeight="100dp">
+
+                <ProgressBar
+                    android:id="@+id/pbBrands"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:backgroundTint="#FF5722"
+                    android:visibility="visible" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvBrands"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_brand" />
+            </FrameLayout>
 
             <!-- Our Cars Section -->
             <RelativeLayout
@@ -160,16 +176,33 @@
                 android:textColor="@color/text_gray"
                 android:textSize="14sp" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvAvailableCars"
+            <FrameLayout
+                android:id="@+id/flAvailableCars"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_car_available" />
+                android:minHeight="180dp">
+
+                <ProgressBar
+                    android:id="@+id/pbAvailableCars"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+
+                    android:backgroundTint="#FF5722"
+                    android:visibility="visible" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvAvailableCars"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:visibility="gone"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_car_available" />
+            </FrameLayout>
 
             <!-- Not Available Section -->
             <RelativeLayout

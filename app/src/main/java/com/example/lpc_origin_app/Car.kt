@@ -11,5 +11,6 @@ data class Car(
     val fuelType: String = "",
     val features: Map<String, String> = emptyMap(),
     val status: String = "Available", // "Available" or "Not Available"
+    val favouriteCount: Int = 0,
     val createdAt: Long = 0
 )

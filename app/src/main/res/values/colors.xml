@@ -13,9 +13,10 @@
     <color name="bottom_nav_dark">#1C2023</color>
     <color name="star_yellow">#FFB800</color>
     <color name="card_bg">#FFFFFF</color>
+    <color name="card_bg_brand">#FFFFFF</color>
     <color name="search_hint">#BDBDBD</color>
     <color name="border_gray">#EEEEEE</color>
-
+    <color name="green">#33691E</color>
     <color name="primary_dark">#1C2023</color>
     <color name="bg_button_primary">#1C2023</color>
     <color name="logout_red">#E53935</color>

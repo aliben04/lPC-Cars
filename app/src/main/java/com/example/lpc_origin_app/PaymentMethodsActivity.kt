@@ -101,31 +101,60 @@ class PaymentMethodsActivity : AppCompatActivity() {
         binding.btnContinueBottom.text = "Processing..."
 
         // Mock Payment Success logic
-        db.collection("bookings").document(bookingId)
-            .update(
-                "isPaid", true,
-                "status", "Live"
-            )
-            .addOnSuccessListener {
-                // Update car status too
-                if (carId.isNotEmpty()) {
-                    db.collection("cars").document(carId).update("status", "Not Available")
-                }
+        db.collection("bookings").document(bookingId).get()
+            .addOnSuccessListener { bookingDoc ->
+                val booking = bookingDoc.toObject(Booking::class.java)
+                if (booking != null) {
+                    db.collection("bookings").document(bookingId)
+                        .update(
+                            "isPaid", true,
+                            "status", "Live"
+                        )
+                        .addOnSuccessListener {
+                            // Update car status too
+                            if (carId.isNotEmpty()) {
+                                db.collection("cars").document(carId).update("status", "Not Available")
+                            }
 
-                Toast.makeText(this, "Payment Successful!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, PaymentSuccessActivity::class.java)
-                intent.putExtra("BOOKING_ID", bookingId)
-                // Passing a mock transaction ID and last 4 digits of card for the receipt
-                val cardNumber = binding.etCardNumber.text.toString()
-                val last4 = if (cardNumber.length >= 4) cardNumber.substring(cardNumber.length - 4) else "0000"
-                intent.putExtra("CARD_LAST_4", last4)
-                startActivity(intent)
-                finish()
+                            // Fetch user details for notification
+                            db.collection("users").document(booking.userId).get()
+                                .addOnSuccessListener { userDoc ->
+                                    val userImageUrl = userDoc.getString("profileImageUrl") ?: ""
+                                    
+                                    // Send Notification to both User and Admin
+                                    NotificationHelper.sendDualBookingNotification(
+                                        userId = booking.userId,
+                                        userName = booking.fullName,
+                                        userImageUrl = userImageUrl,
+                                        carName = booking.carName,
+                                        carImageUrl = booking.carImageUrl
+                                    )
+                                }
+
+                            Toast.makeText(this, "Payment Successful!", Toast.LENGTH_SHORT).show()
+                            val intent = Intent(this, PaymentSuccessActivity::class.java)
+                            intent.putExtra("BOOKING_ID", bookingId)
+                            val cardNumber = binding.etCardNumber.text.toString()
+                            val last4 = if (cardNumber.length >= 4) cardNumber.substring(cardNumber.length - 4) else "0000"
+                            intent.putExtra("CARD_LAST_4", last4)
+                            startActivity(intent)
+                            finish()
+                        }
+                        .addOnFailureListener {
+                            binding.btnContinueBottom.isEnabled = true
+                            binding.btnContinueBottom.text = "Continue"
+                            Toast.makeText(this, "Payment failed: ${it.message}", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    binding.btnContinueBottom.isEnabled = true
+                    binding.btnContinueBottom.text = "Continue"
+                    Toast.makeText(this, "Booking not found", Toast.LENGTH_SHORT).show()
+                }
             }
             .addOnFailureListener {
                 binding.btnContinueBottom.isEnabled = true
                 binding.btnContinueBottom.text = "Continue"
-                Toast.makeText(this, "Payment failed: ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error fetching booking: ${it.message}", Toast.LENGTH_SHORT).show()
             }
     }
 }

@@ -19,6 +19,7 @@ import com.example.lpc_origin_app.databinding.DialogDeleteConfirmationBinding
 import com.example.lpc_origin_app.databinding.ItemFavouriteCarBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 
 class FavouriteActivity : AppCompatActivity() {
 
@@ -109,9 +110,16 @@ class FavouriteActivity : AppCompatActivity() {
         }
 
         dialogBinding.btnDelete.setOnClickListener {
+            val adapter = binding.rvFavourites.adapter as? FavouriteAdapter
+            val car = adapter?.getItemAt(position)?.first
+            val carId = car?.id
+
             db.collection("favourites").document(favouriteId).delete()
                 .addOnSuccessListener {
                     dialog.dismiss()
+                    if (carId != null) {
+                        db.collection("cars").document(carId).update("favouriteCount", FieldValue.increment(-1))
+                    }
                     Toast.makeText(this, "Removed from favourites", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
@@ -174,7 +182,7 @@ class FavouriteActivity : AppCompatActivity() {
             holder.binding.tvStatus.text = car.status
             holder.binding.tvMatricule.text = "car matriculle : ${car.registration}"
             
-            holder.binding.tvFavCount.text = "Saved"
+            holder.binding.tvFavCount.text = "${car.favouriteCount} people have this as favourite"
             holder.binding.tvOwnerName.text = "Owner: Admin"
 
             if (car.imageUrls.isNotEmpty()) {
