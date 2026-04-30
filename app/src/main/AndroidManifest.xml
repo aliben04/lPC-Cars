@@ -32,7 +32,7 @@
         android:theme="@style/Theme.LpcOriginApp">
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.view.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,32 +40,33 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".AdminHomeActivity" />
-        <activity android:name=".SignupActivity" />
-        <activity android:name=".EnterVerificationCodeActivity" />
-        <activity android:name=".ResetPasswordActivity" />
-        <activity android:name=".VerifyResetPasswordActivity" />
-        <activity android:name=".MainActivity" />
-        <activity android:name=".AddCarActivity" />
-        <activity android:name=".CarDetailsActivity" />
-        <activity android:name=".ProfileActivity" />
-        <activity android:name=".EditProfileActivity" />
-        <activity android:name=".BookingDetailsActivity" />
-        <activity android:name=".SearchActivity" />
-        <activity android:name=".LiveContractsActivity" />
-        <activity android:name=".PaymentMethodsActivity" />
-        <activity android:name=".PaymentSuccessActivity" />
-        <activity android:name=".NotificationsActivity" />
-        <activity android:name=".FavouriteActivity" />
-        <activity android:name=".TrackingActivity" />
-        <activity android:name=".AwaitingReservationActivity" />
-        <activity android:name=".HistoryActivity" />
+        <activity android:name=".ui.view.AdminHomeActivity" />
+        <activity android:name=".ui.view.SignupActivity" />
+        <activity android:name=".ui.view.EnterVerificationCodeActivity" />
+        <activity android:name=".ui.view.ResetPasswordActivity" />
+        <activity android:name=".ui.view.VerifyResetPasswordActivity" />
+        <activity android:name=".ui.view.MainActivity" />
+        <activity android:name=".ui.view.AddCarActivity" />
+        <activity android:name=".ui.view.CarDetailsActivity" />
+        <activity android:name=".ui.view.ProfileActivity" />
+        <activity android:name=".ui.view.EditProfileActivity" />
+        <activity android:name=".ui.view.BookingDetailsActivity" />
+        <activity android:name=".ui.view.SearchActivity" />
+        <activity android:name=".ui.view.LiveContractsActivity" />
+        <activity android:name=".ui.view.PaymentMethodsActivity" />
+        <activity android:name=".ui.view.PaymentSuccessActivity" />
+        <activity android:name=".ui.view.NotificationsActivity" />
+        <activity android:name=".ui.view.FavouriteActivity" />
+        <activity android:name=".ui.view.TrackingActivity" />
+        <activity android:name=".ui.view.AwaitingReservationActivity" />
+        <activity android:name=".ui.view.HistoryActivity" />
 
         <service
-            android:name=".LocationService"
+            android:name=".utils.LocationService"
             android:foregroundServiceType="location"
             android:exported="false" />
 
     </application>
 
 </manifest>
+
